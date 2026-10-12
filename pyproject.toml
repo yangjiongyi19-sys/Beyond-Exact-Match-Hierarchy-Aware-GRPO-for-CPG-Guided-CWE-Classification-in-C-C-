@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vulnrl-cwe-agent"
+version = "0.1.0"
+description = "Hierarchy-aware agentic RL scaffold for C/C++ vulnerability classification"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+data = ["pandas>=2.0", "pyarrow>=15"]
+train = ["torch>=2.4", "transformers>=4.46", "accelerate>=0.34", "verl"]
+
+[project.scripts]
+vulnrl-prepare = "vulnrl.prepare_data:main"
+vulnrl-taxonomy = "vulnrl.cwe_taxonomy:main"
+vulnrl-evaluate = "vulnrl.evaluate:main"
+vulnrl-bootstrap = "vulnrl.bootstrap:main"
+vulnrl-export-verl = "vulnrl.export_verl_parquet:main"
+vulnrl-run-verl = "vulnrl.run_verl:main"
+vulnrl-joern-graphml = "vulnrl.joern_graphml:main"
+vulnrl-build-cpg-index = "vulnrl.build_snapshot_index:main"
+vulnrl-train-sft = "vulnrl.train_sft:main"
+vulnrl-build-sft-examples = "vulnrl.build_sft_examples:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

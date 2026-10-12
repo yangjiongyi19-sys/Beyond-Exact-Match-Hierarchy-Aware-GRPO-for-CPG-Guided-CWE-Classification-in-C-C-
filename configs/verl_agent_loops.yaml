@@ -1,0 +1,3 @@
+- name: vulnrl_cwe_agent
+  _target_: vulnrl.verl_agent_loop.CweAgentLoop
+

@@ -1,0 +1,32 @@
+# Local datasets, graph indexes, and experiment outputs
+data/
+datasets/
+artifacts/
+runs/
+outputs/
+checkpoints/
+models/
+cpg_snapshots/
+wandb/
+
+# Large or user-provided files
+*.pdf
+*.parquet
+*.csv
+*.jsonl
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.onnx
+*.log
+
+# Secrets and local environments
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.cache/

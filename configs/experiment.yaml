@@ -1,0 +1,63 @@
+project:
+  name: cwe-active-forensics
+  task: binary vulnerability detection plus one CWE classification
+  research_question: Does hierarchy-aware terminal reward improve a CPG agent's CWE accuracy at a fixed query budget?
+  seeds: [13, 42, 2026]
+
+data:
+  primary_dataset: PrimeVul
+  split: official
+  external_dataset: BigVul
+  bigvul_use: external_evaluation_on_audited_CWE_subset
+  taxonomy: MITRE CWE 4.20
+  deduplicate_by: normalized_function_sha256
+
+model:
+  base: Qwen/Qwen2.5-Coder-7B-Instruct
+  initialization: ordinary_supervised_SFT
+  output: JSON_verdict_CWE_and_evidence_ids
+
+environment:
+  graph: precomputed_read_only_Joern_CPG
+  tools: [get_callers, get_callees, dataflow_slice]
+  max_queries: 3
+  model_code_execution: false
+
+reward:
+  type: terminal_classification_score_only
+  formula: "0.80*hierarchical_classification_score + 0.10*evidence_grounding + 0.10*query_efficiency"
+  classification_score: normalized_ALPHA_for_vulnerable_samples_and_safe_class_correctness
+  alternatives: [exact_CWE_match]
+  judge: deterministic_code
+
+training:
+  framework: VERL_AgentLoop
+  algorithm: standard_GRPO
+  rollout_group_size: 8
+  prompts_per_update: 4
+  learning_rate: 3.0e-6
+  clip_ratio: 0.2
+  hardware: 4xH100_80GB
+  pin_framework_revision: true
+
+evaluation:
+  primary_dataset: PrimeVul_official_test
+  external_dataset: audited_BigVul_subset
+  metrics: [mean_normalized_ALPHA_penalty, normalized_ALPHA_score, CWE_macro_F1, binary_F1, primevul_pair_accuracy, mean_queries, new_nodes_per_query, valid_evidence_rate]
+  confidence_intervals: paired_bootstrap_95_percent
+  checkpoint_selection: validation_only
+  query_budget_curve: [0, 1, 2, 3]
+  binary_f1_noninferiority_margin: -0.03
+
+main_comparisons:
+  - SFT_without_tools
+  - tool_GRPO_with_exact_CWE_reward
+  - tool_GRPO_with_hierarchical_ALPHA_reward
+
+ablations:
+  - name: hierarchical_GRPO_without_tools
+    status: optional
+    purpose: estimate_end_to_end_value_of_CPG_interaction
+  - name: hierarchical_tool_GRPO_without_efficiency_reward
+    status: optional
+    purpose: test_whether_query_cost_reward_teaches_stopping
